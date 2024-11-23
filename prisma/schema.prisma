@@ -19,7 +19,7 @@ model User {
   email      String   @unique
   password   String
   role       UserRole @default(USER)
-  avatar     String
+  avatar     String?
   isActive   Boolean  @default(true)
   isVerified Boolean  @default(false)
 
@@ -28,26 +28,41 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Tokens    Tokens[]
 
   @@map("users")
+}
+
+model Tokens {
+  id    String    @id @default(uuid())
+  token String    @default(uuid())
+  type  TokenType
+  used  Boolean   @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  expiresAt DateTime
+
+  @@map("tokens")
 }
 
 model Establishment {
   id               String  @id @default(uuid())
   name             String
-  shortDescription String
-  description      String
-  address          String
-  phone            String
-  email            String
-  website          String
-  image            String
-  latitude         Float
-  longitude        Float
-  averagePrice     Float
-  type             String
-  category         String
-  rating           Float
+  shortDescription String?
+  identification   String?
+  description      String?
+  address          String?
+  phone            String?
+  email            String?
+  website          String?
+  image            String?
+  latitude         Float?
+  longitude        Float?
+  averagePrice     Float?
+  type             String?
+  category         String?
   isVerified       Boolean @default(false)
   isActive         Boolean @default(true)
 
@@ -101,4 +116,9 @@ model Provider {
 enum UserRole {
   ADMIN
   USER
+}
+
+enum TokenType {
+  RESET_PASSWORD
+  VERIFY_EMAIL
 }

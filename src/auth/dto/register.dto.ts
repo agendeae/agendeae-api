@@ -1,0 +1,21 @@
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator'
+
+export class RegisterDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string
+
+  @IsString()
+  @IsStrongPassword()
+  @IsNotEmpty()
+  password: string
+
+  @IsString()
+  @IsNotEmpty()
+  name: string
+}

@@ -11,7 +11,7 @@ import configuration from './config/configuration'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true,load: [configuration]}),
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     SharedModule,
     EstablishmentModule,
     AdminModule,
