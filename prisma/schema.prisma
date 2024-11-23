@@ -25,10 +25,12 @@ model User {
 
   establishments    Establishment[]
   establishmentsOwn EstablishmentUser[]
+  tokens            Tokens[]
+  providers         Provider[]
+  appointments      Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Tokens    Tokens[]
 
   @@map("users")
 }
@@ -36,8 +38,8 @@ model User {
 model Tokens {
   id    String    @id @default(uuid())
   token String    @default(uuid())
-  type  TokenType
   used  Boolean   @default(false)
+  type  TokenType
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -72,6 +74,7 @@ model Establishment {
   rooms     Room[]
   users     EstablishmentUser[]
   providers Provider[]
+  catalog   Service[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -93,24 +96,128 @@ model Room {
   id          String @id @default(uuid())
   name        String
   description String
-  value       Float
+
+  providers Provider[]
 
   establishmentId String
   establishment   Establishment @relation(fields: [establishmentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("rooms")
 }
 
 model Provider {
-  id          String @id @default(uuid())
-  name        String
-  description String
-  value       Float
+  id           String       @id @default(uuid())
+  name         String
+  description  String
+  averagePrice Float
+  isActive     Boolean      @default(true)
+  image        String?
+  openingHours Json?
+  type         ProviderType @default(PROVIDER)
+  availability Availability
+
+  roomId          String?
+  room            Room?         @relation(fields: [roomId], references: [id])
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id])
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+
+  catalog          ServiceProvider[]
+  exceptionalHours ExceptionalOpeningHours[]
+  appointments     Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("providers")
+}
+
+model Service {
+  id                 String  @id @default(uuid())
+  name               String
+  price              Float?
+  description        String?
+  image              String?
+  duration           Int?
+  isActive           Boolean @default(true)
+  cancellationPolicy String?
+  isCancellable      Boolean @default(true)
+  isRefundable       Boolean @default(true)
+  refundPolicy       String?
+  cancellationTime   Int?
 
   establishmentId String
   establishment   Establishment @relation(fields: [establishmentId], references: [id])
 
-  @@map("providers")
+  providers ServiceProvider[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
+
+model ServiceProvider {
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+  providerId  String
+  provider    Provider @relation(fields: [providerId], references: [id])
+  price       Float
+  description String?
+
+  @@id([serviceId, providerId])
+  @@map("service_providers")
+}
+
+model ExceptionalOpeningHours {
+  id           String   @id @default(uuid())
+  date         DateTime
+  isOpen       Boolean
+  reason       String?
+  openingHours Json?
+
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id])
+
+  @@map("exceptional_opening_hours")
+}
+
+model Appointment {
+  id                String            @id @default(uuid())
+  dateTime          DateTime
+  duration          Int
+  price             Float
+  status            AppointmentStatus @default(PENDING)
+  reason            String?
+  note              String?
+  isPaid            Boolean           @default(false)
+  isActive          Boolean           @default(true)
+  cancelledAt       DateTime?
+  cancelledBy       String?
+  cancelledReason   String?
+  confirmedAt       DateTime?
+  confirmedBy       String?
+  rejectedAt        DateTime?
+  rejectedBy        String?
+  rejectedReason    String?
+  rescheduledBy     String?
+  rescheduledAt     DateTime?
+  rescheduledReason String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("appointments")
 }
 
 enum UserRole {
@@ -121,4 +228,35 @@ enum UserRole {
 enum TokenType {
   RESET_PASSWORD
   VERIFY_EMAIL
+}
+
+enum ProviderType {
+  PROVIDER
+  ESTABLISHMENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+  RESCHEDULED
+  REQUESTED
+  REJECTED
+  EXPIRED
+  CANCELLED_BY_PROVIDER
+  CANCELLED_BY_USER
+  COMPLETED_BY_PROVIDER
+  COMPLETED_BY_USER
+  NO_SHOW_BY_PROVIDER
+  NO_SHOW_BY_USER
+  RESCHEDULED_BY_PROVIDER
+  RESCHEDULED_BY_USER
+}
+
+enum Availability {
+  ACCEPTING_AUTO
+  ACCEPTING_BY_CONFIRMATION
+  NOT_ACCEPTING
 }
