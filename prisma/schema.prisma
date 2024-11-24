@@ -55,6 +55,11 @@ model Establishment {
   shortDescription String?
   identification   String?
   description      String?
+  country          String?
+  state            String?
+  city             String?
+  zipCode          String?
+  neighborhood     String?
   address          String?
   phone            String?
   email            String?
@@ -228,6 +233,7 @@ enum UserRole {
 enum TokenType {
   RESET_PASSWORD
   VERIFY_EMAIL
+  REFRESH_TOKEN
 }
 
 enum ProviderType {

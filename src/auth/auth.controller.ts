@@ -29,7 +29,11 @@ export class AuthController {
       signInDto.email,
       signInDto.password
     )
-    return { accessToken, user: plainToInstance(ProfileEntity, user) }
+
+    return {
+      accessToken,
+      user: plainToInstance(ProfileEntity, user),
+    }
   }
 
   @Public()
